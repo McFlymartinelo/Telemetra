@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TELEMETRA — Relay Server</title>
+  <style>
+    :root {
+      --bg: #0a101a;
+      --panel: #111b2e;
+      --border: #1e3a5f;
+      --teal: #20c997;
+      --text: #e8f0ff;
+      --muted: #7a8fa8;
+      --green: #3dff8a;
+      --red: #ff4d6d;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    h1 { color: var(--teal); font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .subtitle { color: var(--muted); margin-bottom: 2rem; }
+    .grid { display: grid; gap: 1rem; max-width: 640px; }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
+    .card h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--teal); margin-bottom: 1rem; }
+    .row { display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #1a2740; }
+    .row:last-child { border-bottom: none; }
+    .label { color: var(--muted); }
+    .value { font-weight: 600; }
+    .value.ok { color: var(--green); }
+    .value.err { color: var(--red); }
+    label { display: block; margin-bottom: 0.5rem; color: var(--muted); font-size: 0.9rem; }
+    select, button {
+      width: 100%;
+      padding: 0.65rem 0.75rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #0d1525;
+      color: var(--text);
+      font-size: 1rem;
+    }
+    button {
+      margin-top: 1rem;
+      background: var(--teal);
+      color: #041018;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:hover { filter: brightness(1.1); }
+    .hint { margin-top: 0.75rem; font-size: 0.8rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <h1>TELEMETRA Relay</h1>
+  <p class="subtitle">Serveur relais télémétrie sim racing</p>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Statut</h2>
+      <div id="status-rows"></div>
+    </div>
+
+    <div class="card">
+      <h2>Configuration</h2>
+      <label for="game">Jeu actif</label>
+      <select id="game">
+        <option value="simulator">Simulateur (dev)</option>
+        <option value="forza">Forza Horizon / Motorsport</option>
+        <option value="lmu">Le Mans Ultimate</option>
+        <option value="ets2">Euro Truck Simulator 2</option>
+      </select>
+      <label style="margin-top:1rem">
+        <input type="checkbox" id="simulator" checked /> Mode simulateur
+      </label>
+      <button id="save">Enregistrer</button>
+      <p class="hint">Connectez l'app mobile au WebSocket sur le port indiqué ci-dessus.</p>
+    </div>
+  </div>
+
+  <script>
+    async function loadStatus() {
+      const res = await fetch('/api/status');
+      const data = await res.json();
+      const rows = [
+        ['Jeu actif', data.activeGame],
+        ['Source', data.simulatorMode ? 'Simulateur' : data.activeGame],
+        ['Source connectée', data.sourceConnected ? 'Oui' : 'Non'],
+        ['Clients WebSocket', String(data.clientCount)],
+        ['Port WebSocket', String(data.wsPort)],
+        ['Uptime', Math.floor(data.uptimeMs / 1000) + ' s'],
+      ];
+      document.getElementById('status-rows').innerHTML = rows.map(([l, v]) =>
+        `<div class="row"><span class="label">${l}</span><span class="value">${v}</span></div>`
+      ).join('');
+    }
+
+    async function loadConfig() {
+      const res = await fetch('/api/config');
+      const cfg = await res.json();
+      document.getElementById('game').value = cfg.activeGame;
+      document.getElementById('simulator').checked = cfg.simulatorMode;
+    }
+
+    document.getElementById('save').addEventListener('click', async () => {
+      await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          activeGame: document.getElementById('game').value,
+          simulatorMode: document.getElementById('simulator').checked,
+        }),
+      });
+      await loadStatus();
+      alert('Configuration enregistrée.');
+    });
+
+    loadConfig();
+    loadStatus();
+    setInterval(loadStatus, 2000);
+  </script>
+</body>
+</html>

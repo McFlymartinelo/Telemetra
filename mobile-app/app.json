@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "TELEMETRA",
+    "slug": "telemetra",
+    "version": "0.1.0",
+    "orientation": "landscape",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0a101a"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.telemetra.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0a101a"
+      },
+      "package": "com.telemetra.app"
+    },
+    "plugins": [
+      [
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "LANDSCAPE"
+        }
+      ]
+    ]
+  }
+}

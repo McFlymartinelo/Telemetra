@@ -1,0 +1,25 @@
+{
+  "name": "telemetra",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sim racing telemetry monorepo — relay server + mobile dashboard",
+  "workspaces": [
+    "packages/*",
+    "relay-server",
+    "mobile-app"
+  ],
+  "scripts": {
+    "relay": "npm run start --workspace=relay-server",
+    "mobile": "npm run start --workspace=mobile-app",
+    "mobile:clear": "npm run start:clear --workspace=mobile-app",
+    "mobile:tunnel": "npm run start:tunnel:clear --workspace=mobile-app",
+    "build:shared": "npm run build --workspace=@telemetra/shared",
+    "build:relay": "npm run build --workspace=relay-server"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "overrides": {
+    "react": "19.1.0"
+  }
+}
